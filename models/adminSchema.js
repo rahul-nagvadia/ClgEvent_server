@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 
 
-const adminSchema = new schema({
+const admindchema = new schema({
    username : String,
    password : String,
    email : String
 });
 
 
-module.exports = adminSchema;
+module.exports = admindchema;
