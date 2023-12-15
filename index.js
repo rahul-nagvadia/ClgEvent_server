@@ -16,3 +16,7 @@ mongoose.connect(url)
 app.listen(portnumber, () => {
   console.log("Application started on port number " + portnumber);
 });
+
+app.use(express.json())
+
+app.use('/clg', require("../ClgEvent_server/Routes/Login"))
