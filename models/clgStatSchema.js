@@ -5,7 +5,7 @@ const event = mongoose.model('event', eventSchema);
 const collageSchema = require('./collageSchema');
 const clg = mongoose.model('clg', collageSchema);
 
-const matchSchema = new schema({
+const clgStatSchema = new schema({
     clg : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'clg',
@@ -15,6 +15,7 @@ const matchSchema = new schema({
         ref: 'event',
     },
     wins : Number,
+    loses : Number,
     org_clg : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'clg',
@@ -22,4 +23,4 @@ const matchSchema = new schema({
 });
 
 
-module.exports = matchSchema;
+module.exports = clgStatSchema;
