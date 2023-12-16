@@ -1,101 +1,47 @@
 const express = require("express");
 const router = express.Router();
-const user = require('../model/user');
-const { body, validationResult } = require('express-validator');
+const mongoose = require("mongoose");
+const collageSchema = require("../models/collageSchema");
+const Clg = mongoose.model("Clg", collageSchema);
 
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const jwtSecret = "HarshRajeshbhaiGodkar&AbhishekKamleshbhaiJamkar"
+router.post("/register", async (req, res) => {
 
-//after successful registration
-router.post("/createuser",
-    [body('email').isEmail(),
-    body('password', 'Password must contain at least 5 characters.').isLength({ min: 5 })], // password must be at least 5 chars long
+    const { username, password, clgName, city, email, mobileNo } = req.body;
+    console.log(username)
+    const existingUser = await Clg.findOne({ $or: [{ email }, { username },] });
+    const existingcollage = await Clg.findOne({ clg_name: clgName });
 
-    //end point localhost:5000/med/createuser
-    async (req, res) => {
+    if (existingUser) {
+        return res
+            .status(400)
+            .json({ error: "User with the same email or username already exists" });
+    }
 
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
+    if (existingcollage) {
+        return res
+            .status(402)
+            .json({ error: "This Collage is already registered" });
+    }
 
-        //generating hashpassword(encrypting)
-        const salt = await bcrypt.genSalt(10);
-        let secure_password = await bcrypt.hash(req.body.password, salt);
+    const newClg = new Clg({
+        username,
+        password,
+        clg_name: clgName,
+        city,
+        email,
+        mobile_no: mobileNo
+    });
+    
+    console.log(newClg);
+    try {
 
-        try {
-            await user.create({
-                name: req.body.name,
-                password: secure_password,
-                email: req.body.email,
-                location: req.body.location,
-                mobile: req.body.mobile
-            }).then(user => {
-                const data = {
-                    user: {
-                        id: user.id,
-                        name: req.body.name
-                    }
-                }
-                const authToken = jwt.sign(data, jwtSecret);
-                success = true;
-                res.json({ success, authToken });
+        await newClg.save();
+        //   alert("Welcome");
+        return res.status(200).json({ msg: "Registration Successful" });
+    } catch (error) {
 
-            })
-                .catch(err => {
-                    console.log(err);
-                    res.json({ error: "Please enter a unique value." })
-                })
-        } catch (err) {
-            console.log("Error : " + err);
-            res.json({ success: false });
-        }
-    })
-
-//after filling the login form
-router.post("/loginuser",
-    [body('email').isEmail(),
-    body('password', 'Password must contain at least 5 characters.').isLength({ min: 5 })],
-
-    //end point localhost:5000/med/loginuser
-    async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-        let email = req.body.email;
-        try {
-            let userdata = await user.findOne({ email })
-            if (!userdata) {
-                return res.status(400).json({ errors: "Invalid Email address" });
-            }
-            // console.log(userdata.name);
-
-            const pwdCompare = await bcrypt.compare(req.body.password, userdata.password);
-
-            if (!pwdCompare) {
-                return res.status(400).json({ errors: "Invalid Password" });
-            }
-
-            const data = {
-                user: {
-                    id: userdata.id,
-                    name: userdata.name
-                }
-            }
-
-            const authToken = jwt.sign(data, jwtSecret);
-            // console.log(authToken);
-            // dec = jwt.decode(authToken,{complete:true});
-            // console.log(dec.payload);
-            return res.json({ success: true, authToken: authToken });
-        } catch (err) {
-            console.log("Error : " + err);
-            res.json({ success: false });
-        }
-    })
-
-
+        return res.status(401).json({ error: "Registration Failed" });
+    }
+});
 
 module.exports = router;
