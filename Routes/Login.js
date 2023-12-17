@@ -7,6 +7,7 @@ const collageSchema = require("../models/collageSchema"); // Replace with your a
 const Clg = mongoose.model("Clg", collageSchema);
 const adminSchema = require("../models/adminSchema");
 const Admin = mongoose.model("Admin", adminSchema);
+const secretKey = "THISISMYSECURITYKEYWHICHICANTGIVEYOU";
 
 router.post("/register", async (req, res) => {
   const { username, password, clgName, city, email, mobileNo } = req.body;
@@ -37,8 +38,8 @@ router.post("/register", async (req, res) => {
     await newClg.save();
     const payload = {
         user: {
-          id: newUser._id,
-          username: newUser.username,
+          id: newClg._id,
+          username: newClg.username,
         },
       };
       const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
@@ -51,21 +52,22 @@ router.post("/register", async (req, res) => {
   }
 });
 
+
+
+
 router.post("/login", async (req, res) => {
     const { username, password } = req.body;
   
     try {
+
       const clg = await Clg.findOne({ username: username });
-      let admin = false;
-      if(username === "admin" && password === "admin"){
-        admin = true;
-      }
-      console.log(admin);
-  
+      const admin = await Admin.findOne({username: username});
+    
       if (!clg && !admin) {
-        console.log("No");
         return res.status(401).json({ error: "Incorrect Username or Password" });
-      } else if (clg) {
+      }
+
+      else if (clg) {
         const passwordMatch = await bcrypt.compare(password, clg.password);
         if (!passwordMatch) {
           return res
@@ -74,37 +76,37 @@ router.post("/login", async (req, res) => {
         }
         const payload = {
           user: {
-            id: user._id,
-            username: user.username,
+            id: clg._id,
+            username: clg.username,
           },
         };
         const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
-  
         res.cookie("token", token, { httpOnly: true });
         return res.status(200).json({ msg: "Login Successful", token });
-      } else {
-        console.log("Admin");
-        if (password === "admin") {
-          
-        
-        // const payload = {
-        //   admin: {
-        //     username: "admin",
-        //   },
-        // };
-          
-        // const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
-        
-        console.log("Hello"); 
-        // res.cookie("token", token, { httpOnly: true });
-        return res.status(201).json({ msg: "Login Successful"   });
+      } 
+
+      else {
+        let passwordMatch = false;
+        if(admin.password === password){
+          passwordMatch=true;
         }
-        else{
-            return res
+        if (!passwordMatch) {
+          console.log("Heloo");
+          return res
             .status(401)
             .json({ error: "Incorrect Username or Password" });
         }
-      }
+        const payload = {
+          admin: {
+            id: admin._id,
+            username: admin.username,
+          },
+        };
+        const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+        res.cookie("token", token, { httpOnly: true });
+        return res.status(201).json({ msg: "Login Successful", token });
+        }
+
     } catch (error) {
   
       return res.status(401).json({ error: "Login Failed" });
