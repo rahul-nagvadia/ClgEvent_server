@@ -30,3 +30,4 @@ app.use((req, res,next)=>{
 app.use(express.json())
 
 app.use('/clg', require("../ClgEvent_server/Routes/Login"))
+app.use('/admin', require("../ClgEvent_server/Routes/Admin"))

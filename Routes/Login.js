@@ -7,6 +7,8 @@ const collageSchema = require("../models/collageSchema"); // Replace with your a
 const Clg = mongoose.model("Clg", collageSchema);
 const adminSchema = require("../models/adminSchema");
 const Admin = mongoose.model("Admin", adminSchema);
+const requestSchema = require("../models/requestSchema"); // Replace with your actual schema path
+const Req = mongoose.model("Req", requestSchema);
 const secretKey = "THISISMYSECURITYKEYWHICHICANTGIVEYOU";
 
 router.post("/register", async (req, res) => {
@@ -26,7 +28,7 @@ router.post("/register", async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const newClg = new Clg({
+    const newClg = new Req({
       username,
       password: hashedPassword,
       clg_name: clgName,
@@ -62,6 +64,11 @@ router.post("/login", async (req, res) => {
 
       const clg = await Clg.findOne({ username: username });
       const admin = await Admin.findOne({username: username});
+      const req = await Req.findOne({username: username});
+
+      if(req){
+        return res.status(402).json({ msg: "You Still Under Verification Process" });
+      }
     
       if (!clg && !admin) {
         return res.status(401).json({ error: "Incorrect Username or Password" });
