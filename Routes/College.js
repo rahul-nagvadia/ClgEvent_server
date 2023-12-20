@@ -55,7 +55,7 @@ router.post("/register", async (req, res) => {
     const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
 
     res.cookie("token", token, { httpOnly: true });
-    return res.status(200).json({ msg: "Registration Successful" });
+    return res.status(200).json({ msg: "Registration Successful", authToken : token });
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -93,7 +93,7 @@ router.post("/login", async (req, res) => {
       };
       const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
       res.cookie("token", token, { httpOnly: true });
-      return res.status(200).json({ msg: "Login Successful", token });
+      return res.status(200).json({ msg: "Login Successful",  authToken : token });
     } else {
       let passwordMatch = false;
       if (admin.password === password) {
@@ -113,7 +113,7 @@ router.post("/login", async (req, res) => {
       };
       const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
       res.cookie("token", token, { httpOnly: true });
-      return res.status(201).json({ msg: "Login Successful", token });
+      return res.status(201).json({ msg: "Login Successful", adminToken : token });
     }
   } catch (error) {
     return res.status(401).json({ error: "Login Failed" });
