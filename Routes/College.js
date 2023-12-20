@@ -9,6 +9,10 @@ const adminSchema = require("../models/adminSchema");
 const Admin = mongoose.model("Admin", adminSchema);
 const requestSchema = require("../models/requestSchema"); // Replace with your actual schema path
 const Req = mongoose.model("Req", requestSchema);
+const festOrganizerSchema = require("../models/festOrganizerSchema");
+const Orgclg = mongoose.model("Orgclg", festOrganizerSchema);
+const Event = require('../models/eventSchema');
+const event = mongoose.model("event", Event);
 const secretKey = "THISISMYSECURITYKEYWHICHICANTGIVEYOU";
 
 router.post("/register", async (req, res) => {
@@ -120,6 +124,58 @@ router.post("/getAllColleges", async (req, res) => {
   try {
     const colleges = await Clg.find();
     res.json(colleges);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/getOrganizeCollege", async (req, res) => {
+  try {
+    const curr_year = new Date().getFullYear();
+    const clg = await Orgclg.findOne({ year: curr_year });
+
+    if (!clg) {
+      return res.status(404).json({ error: "No college found" });
+    }
+
+    const orgclg = await Clg.findById(clg.clg);
+    console.log(clg);
+    return res.json({ clg: orgclg });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/addEvent", async (req, res) => {
+  try {
+    const newEvent = new event(req.body);
+    await newEvent.save();
+
+    res.status(201).json({ message: 'Event added successfully' });
+  } catch (error) {
+    console.error('Error adding event:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.post("/getAllEvents", async (req, res) => {
+  try {
+    const events = await event.find();
+    console.log(events);
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/getEventDetails/:eventId", async (req, res) => {
+  try {
+    const eventId = req.params.eventId;
+    const foundEvent = await event.findById(eventId);
+    console.log(foundEvent);
+    res.json(foundEvent);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
