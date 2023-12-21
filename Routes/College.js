@@ -13,6 +13,8 @@ const festOrganizerSchema = require("../models/festOrganizerSchema");
 const Orgclg = mongoose.model("Orgclg", festOrganizerSchema);
 const Event = require('../models/eventSchema');
 const event = mongoose.model("event", Event);
+const player = require('../models/playerSchema');
+const Player = mongoose.model("Player", player);
 const secretKey = "THISISMYSECURITYKEYWHICHICANTGIVEYOU";
 
 router.post("/register", async (req, res) => {
@@ -100,7 +102,6 @@ router.post("/login", async (req, res) => {
         passwordMatch = true;
       }
       if (!passwordMatch) {
-        console.log("Heloo");
         return res
           .status(401)
           .json({ error: "Incorrect Username or Password" });
@@ -139,7 +140,7 @@ router.post("/getOrganizeCollege", async (req, res) => {
     }
 
     const orgclg = await Clg.findById(clg.clg);
-    // console.log(clg);
+    console.log(clg);
     return res.json({ clg: orgclg });
 
   } catch (error) {
@@ -163,7 +164,6 @@ router.post("/addEvent", async (req, res) => {
 router.post("/getAllEvents", async (req, res) => {
   try {
     const events = await event.find();
-    console.log(events);
     res.json(events);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
@@ -174,23 +174,11 @@ router.post("/getEventDetails/:eventId", async (req, res) => {
   try {
     const eventId = req.params.eventId;
     const foundEvent = await event.findById(eventId);
-    // console.log(foundEvent);
+    console.log(foundEvent);
     res.json(foundEvent);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-router.post('/getCollege/:id', async (req, res) => {
-  try {
-    const clgId = req.params.id;
-    console.log("Hello: " + clgId)
-    const foundClg = await Clg.findById(clgId);
-    console.log(foundClg);
-    res.json(foundClg);
-  } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-})
 
 module.exports = router;
