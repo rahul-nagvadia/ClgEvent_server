@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const schema = mongoose.schema;
+const schema = mongoose.Schema;
 const collageSchema = require('./collageSchema');
 const clg = mongoose.model('clg', collageSchema);
 const eventSchema = require('./eventSchema');
@@ -16,7 +16,7 @@ const playerSchema = new schema({
     },
     players: [{
         name: String,
-        mobileNumber: String,
+        mobileno: String,
     }]
  });
  
