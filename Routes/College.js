@@ -140,7 +140,6 @@ router.post("/getOrganizeCollege", async (req, res) => {
     }
 
     const orgclg = await Clg.findById(clg.clg);
-    console.log(clg);
     return res.json({ clg: orgclg });
 
   } catch (error) {
@@ -174,11 +173,33 @@ router.post("/getEventDetails/:eventId", async (req, res) => {
   try {
     const eventId = req.params.eventId;
     const foundEvent = await event.findById(eventId);
-    console.log(foundEvent);
     res.json(foundEvent);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+router.post("/addParticipants", async (req, res) => {
+  try {
+    const {eventId,participants,userid} = req.body;
+    
+    const clg = await Clg.findById(userid);
+    if(clg){
+      res.status(400).json({error: "Already Registered"});
+    }
+    const newPlayer = new Player({
+      clg : userid,
+      event : eventId,
+      players : participants,
+    });
+    newPlayer.save();
+    res.status(300);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+
 
 module.exports = router;
