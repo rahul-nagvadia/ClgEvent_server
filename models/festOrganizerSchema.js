@@ -3,7 +3,7 @@ const schema = mongoose.Schema;
 const collageSchema = require('./collageSchema');
 const clg = mongoose.model('clg', collageSchema);
 
-const clgStatSchema = new schema({
+const clgOrgSchema = new schema({
     clg : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'clg',
@@ -20,4 +20,4 @@ const clgStatSchema = new schema({
 });
 
 
-module.exports = clgStatSchema;
+module.exports = clgOrgSchema;

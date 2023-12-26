@@ -3,9 +3,9 @@ const express = require('express');
 const app = express();
 const router = express.Router();
 const portnumber = 5000;
-
+const cors = require('cors');
 const url = `mongodb+srv://harmongo1145:HarshAksharRahul@eventman.j0tzxsr.mongodb.net/interclg?retryWrites=true&w=majority`;
-
+app.use(cors());
 mongoose.connect(url)
   .then(() => {
     console.log("Connected to the database!");

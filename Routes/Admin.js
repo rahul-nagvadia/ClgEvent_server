@@ -87,44 +87,55 @@ router.post("/organizeEvent/:clgid", async (req, res) => {
     const clg_id = req.params.clgid;
     const org_clg = await Clg.findById(clg_id);
     const curr_year = new Date().getFullYear();
-    const organizingclg = new Orgclg({
-      clg: org_clg._id,
-      year: curr_year,
-    });
 
-    await organizingclg.save();
-    res.status(200).json({ organizingclg });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+    // Check if there is an existing record for the current year
+    const existingRecord = await Orgclg.findOne({ year: curr_year });
 
-// ... (existing imports)
-
-router.post("/deleteOrganizingCollege/:year", async (req, res) => {
-  try {
-    const year = parseInt(req.params.year);
-    const deletedOrganizingCollege = await Orgclg.findOneAndDelete({
-      year: year,
-    });
-
-    if (deletedOrganizingCollege) {
-      res
-        .status(200)
-        .json({ message: "Organizing college deleted successfully" });
+    if (existingRecord) {
+      // If an existing record is found, update it with the new college (clgid)
+      existingRecord.clg = org_clg._id;
+      const FoundclgName = await Clg.findById(clg_id);
+      clgName = FoundclgName.clg_name;
+      existingRecord.updatedAt = new Date();
+      await existingRecord.save();
+      res.status(200).json({ organizingclg: existingRecord , clgName});
     } else {
-      res
-        .status(404)
-        .json({
-          message: "No organizing college found for the specified year",
-        });
+      // If no existing record is found, create a new one
+      const organizingclg = new Orgclg({
+        clg: org_clg._id,
+        year: curr_year,
+      });
+      const FoundclgName = await Clg.findById(clg_id);
+      clgName = FoundclgName.clg_name;
+      await organizingclg.save();
+      res.status(200).json({ organizingclg , clgName});
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
+router.post('/changeOrganizingCollege/:year', async (req, res) => {
+  try {
+    const { newCollegeId } = req.body;
+
+    // Update the organizing college in the clgStatSchema
+    await Orgclg.findOneAndUpdate(
+      { year: req.params.year },
+      { clg: newCollegeId },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({ message: 'Organizing college changed successfully' });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+});
+
+
 
 module.exports = router;
 
