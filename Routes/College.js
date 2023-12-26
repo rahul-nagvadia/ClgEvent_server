@@ -199,6 +199,14 @@ router.post("/addParticipants", async (req, res) => {
   }
 });
 
+router.post('/userUpdate', async (req, res) => {
+  try {
+    const user = req.body.user;
+    console.log(user);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+})
 
 
 
