@@ -57,7 +57,7 @@ router.post("/register", async (req, res) => {
     const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
 
     res.cookie("token", token, { httpOnly: true });
-    return res.status(200).json({ msg: "Registration Successful", authToken : token });
+    return res.status(200).json({ msg: "Registration Successful", authToken: token });
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -95,7 +95,7 @@ router.post("/login", async (req, res) => {
       };
       const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
       res.cookie("token", token, { httpOnly: true });
-      return res.status(200).json({ msg: "Login Successful",  authToken : token });
+      return res.status(200).json({ msg: "Login Successful", authToken: token });
     } else {
       let passwordMatch = false;
       if (admin.password === password) {
@@ -114,7 +114,7 @@ router.post("/login", async (req, res) => {
       };
       const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
       res.cookie("token", token, { httpOnly: true });
-      return res.status(201).json({ msg: "Login Successful", adminToken : token });
+      return res.status(201).json({ msg: "Login Successful", adminToken: token });
     }
   } catch (error) {
     return res.status(401).json({ error: "Login Failed" });
@@ -134,6 +134,7 @@ router.post("/getOrganizeCollege", async (req, res) => {
   try {
     const curr_year = new Date().getFullYear();
     const clg = await Orgclg.findOne({ year: curr_year });
+    console.log(clg);
 
     if (!clg) {
       return res.status(404).json({ error: "No college found" });
@@ -179,28 +180,65 @@ router.post("/getEventDetails/:eventId", async (req, res) => {
   }
 });
 
+
 router.post("/addParticipants", async (req, res) => {
   try {
-    const {eventId,participants,userid} = req.body;
-    
-    const clg = await Clg.findById(userid);
-    if(clg){
-      res.status(400).json({error: "Already Registered"});
+    const { eventId, participants, userid } = req.body;
+
+    const clg = await Player.find({ clg: userid, event: eventId });
+    console.log(clg);
+
+    if (clg.length !== 0) {
+      return res.status(400).json({ error: "Already Registered" });
+    } else {
+
+      const newPlayer = new Player({
+        clg: userid,
+        event: eventId,
+        players: participants,
+      });
+
+      await newPlayer.save();
+
+      return res.status(200).json({ success: "Participant added successfully" });
     }
-    const newPlayer = new Player({
-      clg : userid,
-      event : eventId,
-      players : participants,
-    });
-    newPlayer.save();
-    res.status(300);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
+router.get("/getParticipatedclg/:eventId", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    console.log(eventId);
 
+    const participants = await Player.find({ event: eventId }).select('clg');
+    console.log(participants);
 
+    const players = await Player.find({ event: eventId }).select('players');
+    console.log(players);
+
+    // Assuming participants is an array of objects, use map to extract clg values
+    const collegeIds = participants.map(participant => participant.clg);
+
+    const participatingColleges = await Clg.find({ _id: { $in: collegeIds } });
+
+    return res.status(200).json({ participatingColleges });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post('/userUpdate', async (req, res) => {
+  try {
+    const user = req.body.user;
+    console.log(user);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+})
 
 
 
