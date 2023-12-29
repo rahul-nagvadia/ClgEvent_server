@@ -216,9 +216,6 @@ router.get("/getParticipatedclg/:eventId", async (req, res) => {
     const participants = await Player.find({ event: eventId }).select('clg');
     console.log(participants);
 
-    const players = await Player.find({ event: eventId }).select('players');
-    console.log(players);
-
     // Assuming participants is an array of objects, use map to extract clg values
     const collegeIds = participants.map(participant => participant.clg);
 
@@ -230,6 +227,22 @@ router.get("/getParticipatedclg/:eventId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
+  try {
+    const { eventId, clgId } = req.params;
+    console.log(eventId, clgId);
+
+    const players = await Player.find({ event: eventId, clg: clgId }).select('players');
+    console.log(players);
+
+    return res.status(200).json({ players });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 router.post('/userUpdate', async (req, res) => {
   try {
