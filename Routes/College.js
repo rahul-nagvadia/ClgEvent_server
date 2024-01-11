@@ -147,7 +147,7 @@ router.post("/getOrganizeCollege", async (req, res) => {
   try {
     const curr_year = new Date().getFullYear();
     const clg = await Orgclg.findOne({ year: curr_year });
-    // console.log(clg);
+    console.log(clg);
 
     if (!clg) {
       return res.status(404).json({ error: "No college found" });
@@ -260,7 +260,7 @@ router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
 router.post('/userUpdate', async (req, res) => {
   try {
     const user = req.body.user;
-    console.log(user);
+    // console.log(user);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
