@@ -121,6 +121,19 @@ router.post("/login", async (req, res) => {
   }
 });
 
+
+router.post("/getClgDetails/:userid", async (req, res) => {
+  try {
+    let userid = req.params.userid;
+    console.log(userid);
+    const clg = await Clg.findById(userid);
+    console.log(clg)
+    res.json({clg : clg});
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.post("/getAllColleges", async (req, res) => {
   try {
     const colleges = await Clg.find();
@@ -134,7 +147,7 @@ router.post("/getOrganizeCollege", async (req, res) => {
   try {
     const curr_year = new Date().getFullYear();
     const clg = await Orgclg.findOne({ year: curr_year });
-    console.log(clg);
+    // console.log(clg);
 
     if (!clg) {
       return res.status(404).json({ error: "No college found" });
@@ -186,7 +199,7 @@ router.post("/addParticipants", async (req, res) => {
     const { eventId, participants, userid } = req.body;
 
     const clg = await Player.find({ clg: userid, event: eventId });
-    console.log(clg);
+    // console.log(clg);
 
     if (clg.length !== 0) {
       return res.status(400).json({ error: "Already Registered" });
@@ -211,10 +224,10 @@ router.post("/addParticipants", async (req, res) => {
 router.get("/getParticipatedclg/:eventId", async (req, res) => {
   try {
     const { eventId } = req.params;
-    console.log(eventId);
+    // console.log(eventId);
 
     const participants = await Player.find({ event: eventId }).select('clg');
-    console.log(participants);
+    // console.log(participants);
 
     // Assuming participants is an array of objects, use map to extract clg values
     const collegeIds = participants.map(participant => participant.clg);
@@ -231,10 +244,10 @@ router.get("/getParticipatedclg/:eventId", async (req, res) => {
 router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
   try {
     const { eventId, clgId } = req.params;
-    console.log(eventId, clgId);
+    // console.log(eventId, clgId);
 
     const players = await Player.find({ event: eventId, clg: clgId }).select('players');
-    console.log(players);
+    // console.log(players);
 
     return res.status(200).json({ players });
   } catch (error) {
@@ -252,7 +265,6 @@ router.post('/userUpdate', async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 })
-
 
 
 module.exports = router;
