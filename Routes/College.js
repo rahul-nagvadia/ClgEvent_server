@@ -16,6 +16,41 @@ const event = mongoose.model("event", Event);
 const player = require('../models/playerSchema');
 const Player = mongoose.model("Player", player);
 const secretKey = "THISISMYSECURITYKEYWHICHICANTGIVEYOU";
+const axios = require('axios');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'harmongo1145@gmail.com', 
+    pass: 'qwpc mvud uvzx cxcg', 
+  },
+});
+
+function generateOTP() {
+  return crypto.randomBytes(3).toString('hex').toUpperCase(); // Change the length as needed
+}
+
+async function sendOtpByEmail(email, otp) {
+
+  const mailOptions = {
+    from: 'harmongo1145@gmail.com',
+    to: email,
+    subject: 'OTP for Registration',
+    text: `Your OTP for registration is: ${otp}`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return;
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    throw new Error('Error sending OTP');
+  }
+}
+
+
 
 router.post("/register", async (req, res) => {
   const { username, password, clgName, city, email, mobileNo } = req.body;
@@ -37,6 +72,7 @@ router.post("/register", async (req, res) => {
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+  
 
     const newClg = new Req({
       username,
@@ -121,19 +157,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
-router.post("/getClgDetails/:userid", async (req, res) => {
-  try {
-    let userid = req.params.userid;
-    console.log(userid);
-    const clg = await Clg.findById(userid);
-    console.log(clg)
-    res.json({clg : clg});
-  } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 router.post("/getAllColleges", async (req, res) => {
   try {
     const colleges = await Clg.find();
@@ -147,7 +170,7 @@ router.post("/getOrganizeCollege", async (req, res) => {
   try {
     const curr_year = new Date().getFullYear();
     const clg = await Orgclg.findOne({ year: curr_year });
-    console.log(clg);
+    
 
     if (!clg) {
       return res.status(404).json({ error: "No college found" });
@@ -199,7 +222,7 @@ router.post("/addParticipants", async (req, res) => {
     const { eventId, participants, userid } = req.body;
 
     const clg = await Player.find({ clg: userid, event: eventId });
-    // console.log(clg);
+
 
     if (clg.length !== 0) {
       return res.status(400).json({ error: "Already Registered" });
@@ -224,10 +247,10 @@ router.post("/addParticipants", async (req, res) => {
 router.get("/getParticipatedclg/:eventId", async (req, res) => {
   try {
     const { eventId } = req.params;
-    // console.log(eventId);
+  
 
     const participants = await Player.find({ event: eventId }).select('clg');
-    // console.log(participants);
+  
 
     // Assuming participants is an array of objects, use map to extract clg values
     const collegeIds = participants.map(participant => participant.clg);
@@ -244,10 +267,10 @@ router.get("/getParticipatedclg/:eventId", async (req, res) => {
 router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
   try {
     const { eventId, clgId } = req.params;
-    // console.log(eventId, clgId);
+ 
 
     const players = await Player.find({ event: eventId, clg: clgId }).select('players');
-    // console.log(players);
+   
 
     return res.status(200).json({ players });
   } catch (error) {
@@ -260,11 +283,30 @@ router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
 router.post('/userUpdate', async (req, res) => {
   try {
     const user = req.body.user;
-    // console.log(user);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
-})
+});
+
+
+router.post('/sendOtp', async (req, res) => {
+  try {
+    const {new_email} = req.body;
+    const otp = generateOTP();
+    await sendOtpByEmail(new_email, otp);
+    res.status(200).json({otp});
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+
+
+
+
+
+
 
 
 module.exports = router;

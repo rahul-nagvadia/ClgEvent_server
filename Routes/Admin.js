@@ -22,7 +22,7 @@ router.post("/getrequests", async (req, res) => {
 
 router.post("/acceptRequest/:id", async (req, res) => {
   const requestId = req.params.id;
-  console.log(requestId);
+  
   try {
     const request = await Req.findById(requestId);
 
@@ -50,7 +50,7 @@ router.post("/acceptRequest/:id", async (req, res) => {
 
 router.delete("/declineRequest/:id", async (req, res) => {
   const requestId = req.params.id;
-  console.log(requestId);
+ 
   try {
     await Req.findByIdAndDelete(requestId);
     res.json({ message: "Request declined" });
