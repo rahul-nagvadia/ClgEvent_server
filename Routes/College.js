@@ -25,8 +25,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'harmongo1145@gmail.com', 
-    pass: 'qwpc mvud uvzx cxcg', 
+    user: 'harmongo1145@gmail.com',
+    pass: 'qwpc mvud uvzx cxcg',
   },
 });
 
@@ -74,7 +74,7 @@ router.post("/register", async (req, res) => {
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-  
+
 
     const newClg = new Req({
       username,
@@ -172,7 +172,7 @@ router.post("/getOrganizeCollege", async (req, res) => {
   try {
     const curr_year = new Date().getFullYear();
     const clg = await Orgclg.findOne({ year: curr_year });
-    
+
 
     if (!clg) {
       return res.status(404).json({ error: "No college found" });
@@ -260,10 +260,10 @@ router.post("/addParticipants", async (req, res) => {
 router.get("/getParticipatedclg/:eventId", async (req, res) => {
   try {
     const { eventId } = req.params;
-  
+
 
     const participants = await Player.find({ event: eventId }).select('clg');
-  
+
 
     // Assuming participants is an array of objects, use map to extract clg values
     const collegeIds = participants.map(participant => participant.clg);
@@ -280,10 +280,10 @@ router.get("/getParticipatedclg/:eventId", async (req, res) => {
 router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
   try {
     const { eventId, clgId } = req.params;
- 
+
 
     const players = await Player.find({ event: eventId, clg: clgId }).select('players');
-   
+
 
     return res.status(200).json({ players });
   } catch (error) {
@@ -295,19 +295,72 @@ router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
 
 router.post('/userUpdate', async (req, res) => {
   try {
+
     const user = req.body.user;
+    const isverify = req.body.isVerified
+    let clg = await Clg.findById(user.id);
+    if (isverify) {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+
+      clg.username = user.username;
+      clg.password = hashedPassword;
+      clg.email = user.email;
+      clg.mobile_no = user.mobile_no;
+      clg.city = user.city;
+
+      await Clg.findOneAndUpdate({ _id: user.id }, clg)
+        .then(() => {
+          res.json({ success: true })
+        })
+    }
+    else {
+      const otp = generateOTP();
+
+      const mailOptions = {
+        from: 'harmongo1145@gmail.com',
+        to: clg.email,
+        subject: 'OTP for Profile Update',
+        text: `Your OTP for Password Change is: ${otp}`,
+      };
+
+      try {
+        transporter.sendMail(mailOptions);
+
+        res.json({ otp: otp, success : true,  email : clg.email})
+      } catch (error) {
+        console.error('Error sending OTP:', error);
+        res.json({ success: false });
+      }
+
+    }
+    // console.log(user);
+
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/getClgDetails/:userid", async (req, res) => {
+  try {
+    let userid = req.params.userid;
+    // console.log(userid);
+    const clg = await Clg.findById(userid);
+    // console.log(clg)
+    res.json({ clg: clg });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
 
+
 router.post('/sendOtp', async (req, res) => {
   try {
-    const {new_email} = req.body;
+    const { new_email } = req.body;
     const otp = generateOTP();
     await sendOtpByEmail(new_email, otp);
-    res.status(200).json({otp});
+    res.status(200).json({ otp });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -347,6 +400,5 @@ router.post('/schedulematches', async(req,res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 module.exports = router;
