@@ -15,6 +15,8 @@ const Event = require('../models/eventSchema');
 const event = mongoose.model("event", Event);
 const player = require('../models/playerSchema');
 const Player = mongoose.model("Player", player);
+const matchSchema = require('../models/matchSchema');
+const Match = mongoose.model("Match", matchSchema);
 const secretKey = "THISISMYSECURITYKEYWHICHICANTGIVEYOU";
 const axios = require('axios');
 const crypto = require('crypto');
@@ -206,6 +208,17 @@ router.post("/getAllEvents", async (req, res) => {
   }
 });
 
+router.post("/getAllCurryearEvents", async (req, res) => {
+  try {
+    const curr_year = new Date().getFullYear(); 
+    const clgg = await Orgclg.findOne({ year: curr_year });
+    const events = await event.find({clg : clgg.clg});
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.post("/getEventDetails/:eventId", async (req, res) => {
   try {
     const eventId = req.params.eventId;
@@ -300,13 +313,40 @@ router.post('/sendOtp', async (req, res) => {
   }
 });
 
+router.post('/getEventHistDetails', async(req,res) => {
+  try{
+    const curr_year = new Date().getFullYear();
+    const hist = await Orgclg.find({year : {$lt : curr_year}});
+    if(hist){
+      res.status(200).json(hist);
+    }
+    else{
+      res.status(100);
+    }
+  }
+  catch(error){
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
-
-
-
-
-
-
+router.post('/schedulematches', async(req,res) => {
+  try{
+    const schedule = req.body;
+  
+    const match = new Match({
+      clg1 : schedule.clg1,
+      clg2 : schedule.clg2,
+      event : schedule.event,
+      match_date : schedule.matchDate,
+      time: schedule.time,
+    });
+    await match.save();
+    return res.status(200).json({msg : "Hello"});
+  }
+  catch{
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 
 module.exports = router;

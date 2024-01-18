@@ -11,6 +11,7 @@ const matchSchema = new schema({
         ref: 'event',
     },
     match_date: Date, 
+    time : String,
     clg1 : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'clg',
