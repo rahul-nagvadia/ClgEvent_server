@@ -330,13 +330,19 @@ router.post('/userUpdate', async (req, res) => {
 
     const user = req.body.user;
     const isverify = req.body.isVerified
+    const passChanged = req.body.passChanged;
     let clg = await Clg.findById(user.id);
     if (isverify) {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+      if(passChanged){
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+        clg.password = hashedPassword;
+      }
+      else{
+        clg.password = clg.password;
+      }
 
-      clg.username = user.username;
-      clg.password = hashedPassword;
+      clg.username = user.username
       clg.email = user.email;
       clg.mobile_no = user.mobile_no;
       clg.city = user.city;
