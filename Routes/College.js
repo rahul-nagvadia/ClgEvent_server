@@ -277,6 +277,38 @@ router.get("/getParticipatedclg/:eventId", async (req, res) => {
   }
 });
 
+
+
+router.get("/getParticipatedclgNotScheduled/:eventId", async (req, res) => {
+  const eventId = req.params.eventId;
+
+  try {
+    const matches = await Match.find({ event: eventId }).select('clg1 clg2');
+
+    const participatedClgIds = matches.reduce((acc, match) => {
+      if (match.clg1) acc.push(match.clg1);
+      if (match.clg2) acc.push(match.clg2);
+      return acc;
+    }, []);
+
+    const participants = await Player.find({ event: eventId }).select('clg');
+
+    const collegeIds = participants.map(participant => participant.clg);
+
+    const participatingColleges = await Clg.find({
+      _id: { $in: collegeIds, $nin: participatedClgIds }
+    });
+
+    return res.status(200).json({ participatingColleges });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
 router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
   try {
     const { eventId, clgId } = req.params;
