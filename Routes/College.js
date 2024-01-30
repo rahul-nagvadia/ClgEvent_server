@@ -321,12 +321,9 @@ router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
 router.post("/userUpdate", async (req, res) => {
   try {
     const user = req.body.user;
-<<<<<<< HEAD
+
     const isverify = req.body.isVerified;
-=======
-    const isverify = req.body.isVerified
     const passChanged = req.body.passChanged;
->>>>>>> a7ae8087ab4f983e3d218085f0435cf521355cde
     let clg = await Clg.findById(user.id);
     if (isverify) {
       if(passChanged){
