@@ -48,9 +48,8 @@ router.post("/acceptRequest/:id", async (req, res) => {
   }
 });
 
-router.delete("/declineRequest/:id", async (req, res) => {
+router.get("/declineRequest/:id", async (req, res) => {
   const requestId = req.params.id;
- 
   try {
     await Req.findByIdAndDelete(requestId);
     res.json({ message: "Request declined" });
@@ -88,11 +87,10 @@ router.post("/organizeEvent/:clgid", async (req, res) => {
     const org_clg = await Clg.findById(clg_id);
     const curr_year = new Date().getFullYear();
 
-    // Check if there is an existing record for the current year
     const existingRecord = await Orgclg.findOne({ year: curr_year });
 
     if (existingRecord) {
-      // If an existing record is found, update it with the new college (clgid)
+
       existingRecord.clg = org_clg._id;
       const FoundclgName = await Clg.findById(clg_id);
       clgName = FoundclgName.clg_name;
@@ -100,7 +98,7 @@ router.post("/organizeEvent/:clgid", async (req, res) => {
       await existingRecord.save();
       res.status(200).json({ organizingclg: existingRecord , clgName});
     } else {
-      // If no existing record is found, create a new one
+  
       const organizingclg = new Orgclg({
         clg: org_clg._id,
         year: curr_year,
@@ -121,7 +119,6 @@ router.post('/changeOrganizingCollege/:year', async (req, res) => {
   try {
     const { newCollegeId } = req.body;
 
-    // Update the organizing college in the clgStatSchema
     await Orgclg.findOneAndUpdate(
       { year: req.params.year },
       { clg: newCollegeId },
@@ -130,7 +127,6 @@ router.post('/changeOrganizingCollege/:year', async (req, res) => {
 
     res.status(200).json({ message: 'Organizing college changed successfully' });
   } catch (error) {
-    // Handle errors
     res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 });

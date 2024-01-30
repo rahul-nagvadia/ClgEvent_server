@@ -11,35 +11,36 @@ const requestSchema = require("../models/requestSchema"); // Replace with your a
 const Req = mongoose.model("Req", requestSchema);
 const festOrganizerSchema = require("../models/festOrganizerSchema");
 const Orgclg = mongoose.model("Orgclg", festOrganizerSchema);
-const Event = require('../models/eventSchema');
+const Event = require("../models/eventSchema");
 const event = mongoose.model("event", Event);
-const player = require('../models/playerSchema');
+const player = require("../models/playerSchema");
 const Player = mongoose.model("Player", player);
-const matchSchema = require('../models/matchSchema');
+const matchSchema = require("../models/matchSchema");
 const Match = mongoose.model("Match", matchSchema);
+const clgStatSchema = require("../models/clgStatSchema");
+const ClgStat = mongoose.model("ClgStat", clgStatSchema);
 const secretKey = "THISISMYSECURITYKEYWHICHICANTGIVEYOU";
-const axios = require('axios');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const axios = require("axios");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
-    user: 'harmongo1145@gmail.com',
-    pass: 'qwpc mvud uvzx cxcg',
+    user: "harmongo1145@gmail.com",
+    pass: "qwpc mvud uvzx cxcg",
   },
 });
 
 function generateOTP() {
-  return crypto.randomBytes(3).toString('hex').toUpperCase(); // Change the length as needed
+  return crypto.randomBytes(3).toString("hex").toUpperCase(); // Change the length as needed
 }
 
 async function sendOtpByEmail(email, otp) {
-
   const mailOptions = {
-    from: 'harmongo1145@gmail.com',
+    from: "harmongo1145@gmail.com",
     to: email,
-    subject: 'OTP for Registration',
+    subject: "OTP for Registration",
     text: `Your OTP for registration is: ${otp}`,
   };
 
@@ -47,12 +48,10 @@ async function sendOtpByEmail(email, otp) {
     await transporter.sendMail(mailOptions);
     return;
   } catch (error) {
-    console.error('Error sending OTP:', error);
-    throw new Error('Error sending OTP');
+    console.error("Error sending OTP:", error);
+    throw new Error("Error sending OTP");
   }
 }
-
-
 
 router.post("/register", async (req, res) => {
   const { username, password, clgName, city, email, mobileNo } = req.body;
@@ -75,7 +74,6 @@ router.post("/register", async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-
     const newClg = new Req({
       username,
       password: hashedPassword,
@@ -95,7 +93,9 @@ router.post("/register", async (req, res) => {
     const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
 
     res.cookie("token", token, { httpOnly: true });
-    return res.status(200).json({ msg: "Registration Successful", authToken: token });
+    return res
+      .status(200)
+      .json({ msg: "Registration Successful", authToken: token });
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -133,7 +133,9 @@ router.post("/login", async (req, res) => {
       };
       const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
       res.cookie("token", token, { httpOnly: true });
-      return res.status(200).json({ msg: "Login Successful", authToken: token });
+      return res
+        .status(200)
+        .json({ msg: "Login Successful", authToken: token });
     } else {
       let passwordMatch = false;
       if (admin.password === password) {
@@ -152,7 +154,9 @@ router.post("/login", async (req, res) => {
       };
       const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
       res.cookie("token", token, { httpOnly: true });
-      return res.status(201).json({ msg: "Login Successful", adminToken: token });
+      return res
+        .status(201)
+        .json({ msg: "Login Successful", adminToken: token });
     }
   } catch (error) {
     return res.status(401).json({ error: "Login Failed" });
@@ -173,14 +177,12 @@ router.post("/getOrganizeCollege", async (req, res) => {
     const curr_year = new Date().getFullYear();
     const clg = await Orgclg.findOne({ year: curr_year });
 
-
     if (!clg) {
       return res.status(404).json({ error: "No college found" });
     }
 
     const orgclg = await Clg.findById(clg.clg);
     return res.json({ clg: orgclg });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -192,10 +194,10 @@ router.post("/addEvent", async (req, res) => {
     const newEvent = new event(req.body);
     await newEvent.save();
 
-    res.status(201).json({ message: 'Event added successfully' });
+    res.status(201).json({ message: "Event added successfully" });
   } catch (error) {
-    console.error('Error adding event:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error adding event:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -210,9 +212,9 @@ router.post("/getAllEvents", async (req, res) => {
 
 router.post("/getAllCurryearEvents", async (req, res) => {
   try {
-    const curr_year = new Date().getFullYear(); 
+    const curr_year = new Date().getFullYear();
     const clgg = await Orgclg.findOne({ year: curr_year });
-    const events = await event.find({clg : clgg.clg});
+    const events = await event.find({ clg: clgg.clg });
     res.json(events);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
@@ -229,18 +231,15 @@ router.post("/getEventDetails/:eventId", async (req, res) => {
   }
 });
 
-
 router.post("/addParticipants", async (req, res) => {
   try {
     const { eventId, participants, userid } = req.body;
 
     const clg = await Player.find({ clg: userid, event: eventId });
 
-
     if (clg.length !== 0) {
       return res.status(400).json({ error: "Already Registered" });
     } else {
-
       const newPlayer = new Player({
         clg: userid,
         event: eventId,
@@ -249,7 +248,9 @@ router.post("/addParticipants", async (req, res) => {
 
       await newPlayer.save();
 
-      return res.status(200).json({ success: "Participant added successfully" });
+      return res
+        .status(200)
+        .json({ success: "Participant added successfully" });
     }
   } catch (error) {
     console.error(error);
@@ -261,12 +262,10 @@ router.get("/getParticipatedclg/:eventId", async (req, res) => {
   try {
     const { eventId } = req.params;
 
-
-    const participants = await Player.find({ event: eventId }).select('clg');
-
+    const participants = await Player.find({ event: eventId }).select("clg");
 
     // Assuming participants is an array of objects, use map to extract clg values
-    const collegeIds = participants.map(participant => participant.clg);
+    const collegeIds = participants.map((participant) => participant.clg);
 
     const participatingColleges = await Clg.find({ _id: { $in: collegeIds } });
 
@@ -277,13 +276,11 @@ router.get("/getParticipatedclg/:eventId", async (req, res) => {
   }
 });
 
-
-
 router.get("/getParticipatedclgNotScheduled/:eventId", async (req, res) => {
   const eventId = req.params.eventId;
 
   try {
-    const matches = await Match.find({ event: eventId }).select('clg1 clg2');
+    const matches = await Match.find({ event: eventId }).select("clg1 clg2");
 
     const participatedClgIds = matches.reduce((acc, match) => {
       if (match.clg1) acc.push(match.clg1);
@@ -291,31 +288,28 @@ router.get("/getParticipatedclgNotScheduled/:eventId", async (req, res) => {
       return acc;
     }, []);
 
-    const participants = await Player.find({ event: eventId }).select('clg');
+    const participants = await Player.find({ event: eventId }).select("clg");
 
-    const collegeIds = participants.map(participant => participant.clg);
+    const collegeIds = participants.map((participant) => participant.clg);
 
     const participatingColleges = await Clg.find({
-      _id: { $in: collegeIds, $nin: participatedClgIds }
+      _id: { $in: collegeIds, $nin: participatedClgIds },
     });
 
     return res.status(200).json({ participatingColleges });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-
-
 
 router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
   try {
     const { eventId, clgId } = req.params;
 
-
-    const players = await Player.find({ event: eventId, clg: clgId }).select('players');
-
+    const players = await Player.find({ event: eventId, clg: clgId }).select(
+      "players"
+    );
 
     return res.status(200).json({ players });
   } catch (error) {
@@ -324,12 +318,10 @@ router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
   }
 });
 
-
-router.post('/userUpdate', async (req, res) => {
+router.post("/userUpdate", async (req, res) => {
   try {
-
     const user = req.body.user;
-    const isverify = req.body.isVerified
+    const isverify = req.body.isVerified;
     let clg = await Clg.findById(user.id);
     if (isverify) {
       const saltRounds = 10;
@@ -341,33 +333,29 @@ router.post('/userUpdate', async (req, res) => {
       clg.mobile_no = user.mobile_no;
       clg.city = user.city;
 
-      await Clg.findOneAndUpdate({ _id: user.id }, clg)
-        .then(() => {
-          res.json({ success: true })
-        })
-    }
-    else {
+      await Clg.findOneAndUpdate({ _id: user.id }, clg).then(() => {
+        res.json({ success: true });
+      });
+    } else {
       const otp = generateOTP();
 
       const mailOptions = {
-        from: 'harmongo1145@gmail.com',
+        from: "harmongo1145@gmail.com",
         to: clg.email,
-        subject: 'OTP for Profile Update',
+        subject: "OTP for Profile Update",
         text: `Your OTP for Password Change is: ${otp}`,
       };
 
       try {
         transporter.sendMail(mailOptions);
 
-        res.json({ otp: otp, success : true,  email : clg.email})
+        res.json({ otp: otp, success: true, email: clg.email });
       } catch (error) {
-        console.error('Error sending OTP:', error);
+        console.error("Error sending OTP:", error);
         res.json({ success: false });
       }
-
     }
     // console.log(user);
-
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -385,9 +373,7 @@ router.post("/getClgDetails/:userid", async (req, res) => {
   }
 });
 
-
-
-router.post('/sendOtp', async (req, res) => {
+router.post("/sendOtp", async (req, res) => {
   try {
     const { new_email } = req.body;
     const otp = generateOTP();
@@ -398,47 +384,44 @@ router.post('/sendOtp', async (req, res) => {
   }
 });
 
-router.post('/getEventHistDetails', async(req,res) => {
-  try{
+router.post("/getEventHistDetails", async (req, res) => {
+  try {
     const curr_year = new Date().getFullYear();
-    const hist = await Orgclg.find({year : {$lt : curr_year}});
-    if(hist){
+    const hist = await Orgclg.find({ year: { $lt: curr_year } });
+    if (hist) {
       res.status(200).json(hist);
-    }
-    else{
+    } else {
       res.status(100);
     }
-  }
-  catch(error){
+  } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-router.post('/schedulematches', async(req,res) => {
-  try{
+router.post("/schedulematches", async (req, res) => {
+  try {
     const schedule = req.body;
-  
+
     const match = new Match({
-      clg1 : schedule.clg1,
-      clg2 : schedule.clg2,
-      event : schedule.event,
-      match_date : schedule.matchDate,
+      clg1: schedule.clg1,
+      clg2: schedule.clg2,
+      event: schedule.event,
+      match_date: schedule.matchDate,
       time: schedule.time,
     });
     await match.save();
-    return res.status(200).json({msg : "Hello"});
-  }
-  catch{
+    return res.status(200).json({ msg: "Hello" });
+  } catch {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-router.post('/getScheduledEvents', async (req, res) => {
+router.post("/getScheduledEvents", async (req, res) => {
   try {
-    const matches = await Match.find({ event: { $exists: true } }, 'event');
+    const matches = await Match.find({ event: { $exists: true } }, "event");
 
     // Extract unique event IDs from the matches
-    const eventIds = matches.map(match => match.event);
+    const eventIds = matches.map((match) => match.event);
 
     // Retrieve all events using the event IDs
     const events = await event.find({ _id: { $in: eventIds } });
@@ -450,7 +433,7 @@ router.post('/getScheduledEvents', async (req, res) => {
   }
 });
 
-router.post('/getMatches/:eventId', async (req, res) => {
+router.post("/getMatches/:eventId", async (req, res) => {
   try {
     const eventId = req.params.eventId;
     // console.log(eventId);
@@ -463,20 +446,20 @@ router.post('/getMatches/:eventId', async (req, res) => {
         const eventName = await event.findById(match.event);
         const clg1 = await Clg.findById(match.clg1);
         const clg2 = await Clg.findById(match.clg2);
-        let winn = '';
+        let winn = "";
 
-        if(match.winner){
+        if (match.winner) {
           winn = await Clg.findById(match.winner);
         }
 
         return {
-          eventName : eventName.event_name,
-          clg1 : clg1,
-          clg2 : clg2,
+          eventName: eventName.event_name,
+          clg1: clg1,
+          clg2: clg2,
           id: match._id,
           match_date: match.match_date,
           time: match.time,
-          winner : winn.clg_name
+          winner: winn.clg_name,
         };
       })
     );
@@ -489,39 +472,90 @@ router.post('/getMatches/:eventId', async (req, res) => {
   }
 });
 
-router.post('/matchWinner/:eventId/:index', async (req, res) => {
+router.post("/matchWinner/:eventId/:index", async (req, res) => {
   try {
     const index = req.params.index;
-    const {clg} = req.body; // Assuming clgId is a unique identifier like the clg._id
+    const { clg } = req.body; // Assuming clgId is a unique identifier like the clg._id
     const eventId = req.params.eventId;
 
     const matches = await Match.find({ event: eventId });
-    
+
     // Make sure the index is within bounds
     if (index >= 0 && index < matches.length) {
       // Determine the winner based on the clgId
       let winner;
       if (clg.toString() === matches[index].clg1.toString()) {
         winner = matches[index].clg1;
+        losser = matches[index].clg2;
       } else if (clg.toString() === matches[index].clg2.toString()) {
         winner = matches[index].clg2;
+        losser = matches[index].clg1;
       }
 
       // Update the winner property for the specific match
       // matches[index].winner = winner;
       const match = new Match({
-        _id : matches[index]._id,
-        clg1 : matches[index].clg1,
-        clg2 : matches[index].clg2,
-        event : matches[index].event,
-        match_date : matches[index].match_date,
+        _id: matches[index]._id,
+        clg1: matches[index].clg1,
+        clg2: matches[index].clg2,
+        event: matches[index].event,
+        match_date: matches[index].match_date,
         time: matches[index].time,
-        winner : winner
+        winner: winner,
       });
 
-      // console.log("Match :: ")
-      // console.log(match)
-      // Save the updated match back to the database
+
+      //  for winner
+      const clgstatexist1 = await ClgStat.findOne({
+        clg: winner,
+        event: matches[index].event,
+      });
+      if (clgstatexist1) {
+        clgstatexist1.wins = clgstatexist1.wins + 1;
+        clgstatexist1.total_matches = clgstatexist1.total_matches + 1;
+      } else {
+        const response1 = await axios.post(
+          "http://localhost:5000/clg/getOrganizeCollege"
+        );
+        const collegeInfo1 = response1.data.clg;
+        const clgstat1 = new ClgStat({
+          clg: winner,
+          event: matches[index].event,
+          wins: 1,
+          loses: 0,
+          total_matches: 1,
+          org_clg: collegeInfo1._id,
+        });
+
+        await clgstat1.save();
+      }
+
+      //for losser
+
+      const clgstatexist2 = await ClgStat.findOne({
+        clg: losser,
+        event: matches[index].event,
+      });
+      if (clgstatexist2) {
+        clgstatexist2.loses = clgstatexist2.loses + 1;
+        clgstatexist2.total_matches = clgstatexist2.total_matches + 1;
+      } else {
+        const response2 = await axios.post(
+          "http://localhost:5000/clg/getOrganizeCollege"
+        );
+        const collegeInfo2 = response2.data.clg;
+        const clgstat2 = new ClgStat({
+          clg: losser,
+          event: matches[index].event,
+          loses: 1,
+          wins: 0,
+          total_matches: 1,
+          org_clg: collegeInfo2._id,
+        });
+
+        await clgstat2.save();
+      }
+
       await Match.findOneAndUpdate({ _id: matches[index]._id }, match)
         .then(() => {
           res.json({ success: true });
@@ -539,5 +573,28 @@ router.post('/matchWinner/:eventId/:index', async (req, res) => {
   }
 });
 
+async function getLeaderboard() {
+  try {
+    const leaderboard = await ClgStat
+            .find()
+            .populate('clg', 'clg_name') // Populate with the 'clg_name' field from 'collageSchema'
+            .sort({ wins: -1 });
+
+            return leaderboard;
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error.message);
+    throw error;
+  }
+}
+
+router.post('/leaderboard', async (req, res) => {
+  try {
+    const leaderboard = await getLeaderboard();
+    res.json(leaderboard);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 module.exports = router;

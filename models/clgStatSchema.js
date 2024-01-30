@@ -16,6 +16,7 @@ const clgStatSchema = new schema({
     },
     wins : Number,
     loses : Number,
+    total_matches : Number,
     org_clg : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'clg',
