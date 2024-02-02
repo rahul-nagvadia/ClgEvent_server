@@ -326,12 +326,12 @@ router.post("/userUpdate", async (req, res) => {
     const passChanged = req.body.passChanged;
     let clg = await Clg.findById(user.id);
     if (isverify) {
-      if(passChanged){
+      if (passChanged) {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(user.password, saltRounds);
         clg.password = hashedPassword;
       }
-      else{
+      else {
         clg.password = clg.password;
       }
 
@@ -415,6 +415,7 @@ router.post("/schedulematches", async (req, res) => {
       event: schedule.event,
       match_date: schedule.matchDate,
       time: schedule.time,
+      round : schedule.round
     });
     await match.save();
     return res.status(200).json({ msg: "Hello" });
@@ -422,6 +423,49 @@ router.post("/schedulematches", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+router.get("/getClgsParticipated/:eventId/:round", async (req, res) => {
+  const { eventId, round } = req.params;
+  console.log(eventId)
+  console.log(round)
+  try {
+
+    if(round == 1){
+      const matches = await Match.find({ event: eventId,  }).select("clg1 clg2");
+
+      const participatedClgIds = matches.reduce((acc, match) => {
+        if (match.clg1) acc.push(match.clg1);
+        if (match.clg2) acc.push(match.clg2);
+        return acc;
+      }, []);
+  
+      const participants = await Player.find({ event: eventId }).select("clg");
+  
+      const collegeIds = participants.map((participant) => participant.clg);
+  
+      const participatingColleges = await Clg.find({
+        _id: { $in: collegeIds, $nin: participatedClgIds },
+      });      
+      res.json({success : true, clgs : participatingColleges });
+    }
+    else{
+      const matches = await Match.find({ event: eventId,  round : (round - 1)}).select("winner");
+      // console.log(matches)
+      const winners = matches.map((match) => match.winner);
+      const partClg = await Clg.find({
+        _id : { $in: winners},
+      })
+      res.json({success : true, clgs : partClg});
+    }
+
+
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 router.post("/getScheduledEvents", async (req, res) => {
   try {
@@ -467,6 +511,7 @@ router.post("/getMatches/:eventId", async (req, res) => {
           match_date: match.match_date,
           time: match.time,
           winner: winn.clg_name,
+          round: match.round
         };
       })
     );
@@ -583,11 +628,11 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
 async function getLeaderboard() {
   try {
     const leaderboard = await ClgStat
-            .find()
-            .populate('clg', 'clg_name') // Populate with the 'clg_name' field from 'collageSchema'
-            .sort({ wins: -1 });
+      .find()
+      .populate('clg', 'clg_name') // Populate with the 'clg_name' field from 'collageSchema'
+      .sort({ wins: -1 });
 
-            return leaderboard;
+    return leaderboard;
   } catch (error) {
     console.error('Error fetching leaderboard:', error.message);
     throw error;
