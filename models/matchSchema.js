@@ -23,7 +23,8 @@ const matchSchema = new schema({
     winner : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'clg',
-    }
+    },
+    round : String
 });
 
 
