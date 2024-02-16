@@ -548,7 +548,7 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
   try {
     const index = req.params.index;
     const { clg } = req.body; // Assuming clgId is a unique identifier like the clg._id
-    const eventId = req.params.eventId;
+    const eventId = req.params.eventId; 
 
     const matches = await Match.find({ event: eventId });
 
@@ -582,10 +582,10 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
         clg: winner,
         event: matches[index].event,
       });
+      console.log(clgstatexist1);
       if (clgstatexist1) {
         clgstatexist1.wins = clgstatexist1.wins + 1;
         clgstatexist1.total_matches = clgstatexist1.total_matches + 1;
-        await clgstatexist1.save();
       } else {
         const response1 = await axios.post(
           "http://localhost:5000/clg/getOrganizeCollege"
