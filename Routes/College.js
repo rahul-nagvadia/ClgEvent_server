@@ -564,7 +564,9 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
       if (clgstatexist1) {
         clgstatexist1.wins = clgstatexist1.wins + 1;
         clgstatexist1.total_matches = clgstatexist1.total_matches + 1;
-      } else {
+        
+      } 
+      else {
         const response1 = await axios.post(
           "http://localhost:5000/clg/getOrganizeCollege"
         );
