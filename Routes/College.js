@@ -53,6 +53,7 @@ async function sendOtpByEmail(email, otp) {
   }
 }
 
+/*
 router.post("/register", async (req, res) => {
   const { username, password, clgName, city, email, mobileNo } = req.body;
 
@@ -162,7 +163,8 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ error: "Login Failed" });
   }
 });
-
+*/
+/*
 router.post("/getAllColleges", async (req, res) => {
   try {
     const colleges = await Clg.find();
@@ -188,7 +190,8 @@ router.post("/getOrganizeCollege", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
+*/
+/*
 router.post("/addEvent", async (req, res) => {
   try {
     const newEvent = new event(req.body);
@@ -231,6 +234,24 @@ router.post("/getEventDetails/:eventId", async (req, res) => {
   }
 });
 
+router.post("/getEventHistDetails", async (req, res) => {
+  try {
+    const curr_year = new Date().getFullYear();
+    const hist = await Orgclg.find({ year: { $lt: curr_year } });
+    if (hist) {
+      res.status(200).json(hist);
+    } else {
+      res.status(100);
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+*/
+
+/*
+
 router.post("/addParticipants", async (req, res) => {
   try {
     const { eventId, participants, userid } = req.body;
@@ -262,38 +283,13 @@ router.get("/getParticipatedclg/:eventId", async (req, res) => {
   try {
     const { eventId } = req.params;
 
+    const participants = await Player.find({ event: eventId }).select("clg");
+
     // Assuming participants is an array of objects, use map to extract clg values
     const collegeIds = participants.map((participant) => participant.clg);
 
     const participatingColleges = await Clg.find({ _id: { $in: collegeIds } });
     console.log(participatingColleges);
-
-    return res.status(200).json({ participatingColleges });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-router.get("/getParticipatedclgNotScheduled/:eventId", async (req, res) => {
-  const eventId = req.params.eventId;
-
-  try {
-    const matches = await Match.find({ event: eventId }).select("clg1 clg2");
-
-    const participatedClgIds = matches.reduce((acc, match) => {
-      if (match.clg1) acc.push(match.clg1);
-      if (match.clg2) acc.push(match.clg2);
-      return acc;
-    }, []);
-
-    const participants = await Player.find({ event: eventId }).select("clg");
-
-    const collegeIds = participants.map((participant) => participant.clg);
-
-    const participatingColleges = await Clg.find({
-      _id: { $in: collegeIds, $nin: participatedClgIds },
-    });
 
     return res.status(200).json({ participatingColleges });
   } catch (error) {
@@ -317,6 +313,9 @@ router.post("/getPlayers/:eventId/:clgId", async (req, res) => {
   }
 });
 
+*/
+
+/*
 router.post("/userUpdate", async (req, res) => {
   try {
     const user = req.body.user;
@@ -366,7 +365,8 @@ router.post("/userUpdate", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
+*/
+/*
 router.post("/getClgDetails/:userid", async (req, res) => {
   try {
     let userid = req.params.userid;
@@ -379,6 +379,8 @@ router.post("/getClgDetails/:userid", async (req, res) => {
   }
 });
 
+*/
+/*
 router.post("/sendOtp", async (req, res) => {
   try {
     const { new_email } = req.body;
@@ -389,17 +391,32 @@ router.post("/sendOtp", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+*/
 
-router.post("/getEventHistDetails", async (req, res) => {
+/*
+router.get("/getParticipatedclgNotScheduled/:eventId", async (req, res) => {
+  const eventId = req.params.eventId;
+
   try {
-    const curr_year = new Date().getFullYear();
-    const hist = await Orgclg.find({ year: { $lt: curr_year } });
-    if (hist) {
-      res.status(200).json(hist);
-    } else {
-      res.status(100);
-    }
+    const matches = await Match.find({ event: eventId }).select("clg1 clg2");
+
+    const participatedClgIds = matches.reduce((acc, match) => {
+      if (match.clg1) acc.push(match.clg1);
+      if (match.clg2) acc.push(match.clg2);
+      return acc;
+    }, []);
+
+    const participants = await Player.find({ event: eventId }).select("clg");
+
+    const collegeIds = participants.map((participant) => participant.clg);
+
+    const participatingColleges = await Clg.find({
+      _id: { $in: collegeIds, $nin: participatedClgIds },
+    });
+
+    return res.status(200).json({ participatingColleges });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -414,7 +431,7 @@ router.post("/schedulematches", async (req, res) => {
       event: schedule.event,
       match_date: schedule.matchDate,
       time: schedule.time,
-      round : schedule.round
+      round: schedule.round
     });
     await match.save();
     return res.status(200).json({ msg: "Hello" });
@@ -423,42 +440,44 @@ router.post("/schedulematches", async (req, res) => {
   }
 });
 
+
+
 router.get("/getClgsParticipated/:eventId/:round", async (req, res) => {
   const { eventId, round } = req.params;
-  console.log(eventId)
-  console.log(round)
+  // console.log(eventId)
+  // console.log(round)
   try {
 
-    if(round == 1){
-      const matches = await Match.find({ event: eventId,  }).select("clg1 clg2");
+    if (round == 1) {
+      const matches = await Match.find({ event: eventId, }).select("clg1 clg2");
 
       const participatedClgIds = matches.reduce((acc, match) => {
         if (match.clg1) acc.push(match.clg1);
         if (match.clg2) acc.push(match.clg2);
         return acc;
       }, []);
-  
+
       const participants = await Player.find({ event: eventId }).select("clg");
-  
+
       const collegeIds = participants.map((participant) => participant.clg);
-  
+
       const participatingColleges = await Clg.find({
         _id: { $in: collegeIds, $nin: participatedClgIds },
-      });      
-      res.json({success : true, clgs : participatingColleges });
+      });
+      res.json({ success: true, clgs: participatingColleges });
     }
-    else{
-      const matches = await Match.find({ event: eventId,  round : (round - 1)}).select("winner");
+    else {
+      const matches = await Match.find({ event: eventId, round: (round - 1) }).select("winner");
       // console.log(matches)
       const winners = matches.map((match) => match.winner);
       const partClg = await Clg.find({
-        _id : { $in: winners},
+        _id: { $in: winners },
       })
-      res.json({success : true, clgs : partClg});
+      res.json({ success: true, clgs: partClg });
     }
 
 
-    
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -483,6 +502,8 @@ router.post("/getScheduledEvents", async (req, res) => {
   }
 });
 
+*/
+/*
 router.post("/getMatches/:eventId", async (req, res) => {
   try {
     const eventId = req.params.eventId;
@@ -564,6 +585,7 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
       if (clgstatexist1) {
         clgstatexist1.wins = clgstatexist1.wins + 1;
         clgstatexist1.total_matches = clgstatexist1.total_matches + 1;
+        await clgstatexist1.save();
       } else {
         const response1 = await axios.post(
           "http://localhost:5000/clg/getOrganizeCollege"
@@ -590,6 +612,7 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
       if (clgstatexist2) {
         clgstatexist2.loses = clgstatexist2.loses + 1;
         clgstatexist2.total_matches = clgstatexist2.total_matches + 1;
+        await clgstatexist2.save();
       } else {
         const response2 = await axios.post(
           "http://localhost:5000/clg/getOrganizeCollege"
@@ -623,7 +646,8 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
+*/
+/*
 async function getLeaderboard() {
   try {
     const leaderboard = await ClgStat
@@ -647,5 +671,5 @@ router.post('/leaderboard', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
+*/
 module.exports = router;
