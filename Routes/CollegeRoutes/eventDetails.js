@@ -28,6 +28,7 @@ router.post("/getAllEvents", async (req, res) => {
     }
 });
 
+
 router.post("/getAllCurryearEvents", async (req, res) => {
     try {
         const curr_year = new Date().getFullYear();
