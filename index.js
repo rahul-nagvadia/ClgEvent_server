@@ -29,5 +29,12 @@ app.use((req, res,next)=>{
 
 app.use(express.json())
 
-app.use('/clg', require("../ClgEvent_server/Routes/College"))
-app.use('/admin', require("../ClgEvent_server/Routes/Admin"))
+app.use('/clg', require("../ClgEvent_server/Routes/CollegeRoutes/CreateUser"))
+app.use('/clg', require("./Routes/CollegeRoutes/eventDetails"))
+app.use('/clg', require("./Routes/CollegeRoutes/userUpdate"))
+app.use('/clg', require("./Routes/CollegeRoutes/getColleges"))
+app.use('/clg', require("./Routes/CollegeRoutes/Participation"))
+app.use('/clg', require("./Routes/CollegeRoutes/Scheduling"))
+app.use('/clg', require("./Routes/CollegeRoutes/Matches"))
+app.use('/clg', require("./Routes/CollegeRoutes/Leaderboard"))
+app.use('/admin', require("../ClgEvent_server/Routes/Admin/Admin"))
