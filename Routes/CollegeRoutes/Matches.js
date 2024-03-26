@@ -86,13 +86,13 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
 
             //  for winner
             const clgstatexist1 = await ClgStat.findOne({
-                clg: winner,
-                event: matches[index].event,
+                clg: winner
+                
             });
             if (clgstatexist1) {
                 clgstatexist1.wins = clgstatexist1.wins + 1;
                 clgstatexist1.total_matches = clgstatexist1.total_matches + 1;
-                await clgstatexist1.save();
+                await ClgStat.findByIdAndUpdate({_id : clgstatexist1._id}, clgstatexist1);
             } else {
                 const response1 = await axios.post(
                     "http://localhost:5000/clg/getOrganizeCollege"
@@ -113,13 +113,12 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
             //for losser
 
             const clgstatexist2 = await ClgStat.findOne({
-                clg: losser,
-                event: matches[index].event,
+                clg: losser
             });
             if (clgstatexist2) {
                 clgstatexist2.loses = clgstatexist2.loses + 1;
                 clgstatexist2.total_matches = clgstatexist2.total_matches + 1;
-                await clgstatexist2.save();
+                await ClgStat.findByIdAndUpdate({_id : clgstatexist2._id}, clgstatexist2);
             } else {
                 const response2 = await axios.post(
                     "http://localhost:5000/clg/getOrganizeCollege"
