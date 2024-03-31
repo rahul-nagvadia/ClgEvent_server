@@ -36,14 +36,12 @@ router.post("/addParticipants", async (req, res) => {
 router.get("/getParticipatedclg/:eventId", async (req, res) => {
     try {
         const { eventId } = req.params;
-
+        console.log(eventId);
         const participants = await Player.find({ event: eventId }).select("clg");
         // Assuming participants is an array of objects, use map to extract clg values
         const collegeIds = participants.map((participant) => participant.clg);
 
         const participatingColleges = await Clg.find({ _id: { $in: collegeIds } });
-        console.log(participatingColleges);
-
         return res.status(200).json({ participatingColleges });
     } catch (error) {
         console.error(error);

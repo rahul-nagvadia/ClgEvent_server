@@ -70,7 +70,6 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
                 winner = matches[index].clg2;
                 losser = matches[index].clg1;
             }
-
             // Update the winner property for the specific match
             // matches[index].winner = winner;
             const match = new Match({
@@ -81,6 +80,7 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
                 match_date: matches[index].match_date,
                 time: matches[index].time,
                 winner: winner,
+                round : parseInt(matches[index].round) + 1,
             });
 
 
@@ -137,7 +137,7 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
                 await clgstat2.save();
             }
 
-            await Match.findOneAndUpdate({ _id: matches[index]._id }, match)
+            await Match.findOneAndUpdate({ _id: matches[index]._id}, match)
                 .then(() => {
                     res.json({ success: true });
                 })

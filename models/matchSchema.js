@@ -19,6 +19,7 @@ const matchSchema = new schema({
     clg2 : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'clg',
+        default: null
     },
     winner : {
         type: mongoose.Schema.Types.ObjectId,
