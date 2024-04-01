@@ -9,4 +9,5 @@ const adminSchema = new schema({
 });
 
 
+//AK
 module.exports = adminSchema;
