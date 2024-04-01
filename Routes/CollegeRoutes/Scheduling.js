@@ -60,7 +60,7 @@ router.get("/getClgsParticipated/:eventId/:round", async (req, res) => {
     } else {
       const matches = await Match.find({
         event: eventId,
-        round: round ,
+        round: (parseInt(round) - 1) ,
       }).select("winner");
       // console.log(matches)
       const winners = matches.map((match) => match.winner);
@@ -119,7 +119,7 @@ router.post("/schedulematches2", async (req, res) => {
 
 router.post("/incrrnd", async (req, res) => {
   const { eventId, oddTeamId, rnd, match_date, time } = req.body;
-  if (rnd == 1) {
+  
 
     const match = new Match({
       clg1: oddTeamId,
@@ -128,7 +128,7 @@ router.post("/incrrnd", async (req, res) => {
       match_date: match_date,
       time: time,
       winner: oddTeamId,
-      round: "2",
+      round: rnd,
     });
     match.save();
     res.json({
@@ -136,29 +136,6 @@ router.post("/incrrnd", async (req, res) => {
       message: "Round incremented for the odd team",
       match,
     });
-  } else {
-    try {
-      // Find the match where the event matches eventId and winner is oddTeamId
-      const match = await Match.findOneAndUpdate(
-        { event: eventId, winner: oddTeamId },
-        { $inc: { round: 1 } },
-        { new: true } // To return the updated document
-      );
-
-      if (!match) {
-        return res.status(404).json({ error: "Match not found" });
-      }
-
-      res.json({
-        success: true,
-        message: "Round incremented for the odd team",
-        match,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  }
 });
 
 router.post("/getScheduledEvents", async (req, res) => {

@@ -80,7 +80,7 @@ router.post("/matchWinner/:eventId/:index", async (req, res) => {
                 match_date: matches[index].match_date,
                 time: matches[index].time,
                 winner: winner,
-                round : parseInt(matches[index].round) + 1,
+                round : matches[index].round,
             });
 
 
