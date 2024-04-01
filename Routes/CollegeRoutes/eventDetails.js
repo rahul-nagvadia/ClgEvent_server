@@ -54,10 +54,10 @@ router.post("/getEventDetails/:eventId", async (req, res) => {
 router.post("/getEventHistDetails", async (req, res) => {
     try {
         const curr_year = new Date().getFullYear();
-        const hist = await Orgclg.find({ year: { $lt: curr_year } })
+        const hist = await Orgclg.find({ winner: { $ne: null } })
             .populate('clg', 'clg_name') // Populate the 'clg' field with the 'clg_name' only
             .populate('winner', 'clg_name'); // Populate the 'winner' field with the 'clg_name' only
-        if (hist) {
+        if (hist && hist.length > 0) {
             res.status(200).json(hist);
         } else {
             res.status(404).json({ error: "No event history found" }); // Update status code to 404
